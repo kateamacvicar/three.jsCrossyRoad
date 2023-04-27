@@ -1,0 +1,802 @@
+<html>
+  <head>
+    <title>CS 307 Final Project</title>
+    <style>
+      /* feel free to style the canvas any way you want. If you want it to
+      use the entire window, set width: 100% and height: 100%. */
+      canvas {
+          display: block;
+          margin: 10px;
+          width: 98%;
+          height: 85%;
+      }
+    </style>
+    <script src="https://cs.wellesley.edu/~cs307/threejs/libs/three.min.js"></script>
+    <script src="https://cs.wellesley.edu/~cs307/threejs/libs/tw.js"></script>
+    <script src="https://cs.wellesley.edu/~cs307/threejs/libs/OrbitControls.js"></script>
+    <script src="https://cs.wellesley.edu/~cs307/threejs/libs/dat.gui.min.js"></script>
+    
+    <script src = "./duck.js"></script>
+    <script src = "./tree.js"></script>
+    <script src = "./crocodile.js"></script>
+    <script src = "./terrain.js"></script>
+    <script src = "./placeholderLog.js"></script>
+    <script src = "./endScene.js"></script>
+  </head>
+<body>
+<h1>HWK 6 Creative Scene</h1>
+<h3> Creators: Kate MacVicar and Marilyn Fang </h3>
+<!-- <p>This scene is a part of our final project, where we will be creating a crossy road-like game. <br>
+  We plan to implement keyboard functionality, to move the duck character through the scene. 
+  We will bind the arrow keys to the scene.  <br>
+  We also plan to animate the logs and crocodiles to be moving through the water. <br>
+  We also want to create a jumping animation for the duck. This animation will be played everytime the 
+  player presses one of the arrow keys on the keyboard. 
+</p> -->
+<script>
+
+//color for the sky
+TW.clearColor = 0xefd6a78;
+
+//creates a scene
+var scene = new THREE.Scene();
+
+//directional light for objects to look more 3D
+var directionalLight = new THREE.DirectionalLight(0xd24856, 0.5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+//ambient light to lit up the scene
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+scene.add(ambientLight);
+
+//the base plane in water color
+var water = createWater();
+scene.add(water);
+
+//initial, bigger grass section. The biggest in the scene. 
+var grass1 = createGrass();
+grass1.position.set(0,0.1,0);
+scene.add(grass1);
+
+//global arrays to keep track of the randomly generated objects -- crocs and logs
+var crocArray=[];
+var logArray=[];
+
+//global array to keep track of the generated planes for grass
+terrain =[];
+
+//global variable to track the distance travelled by the duck
+var distanceTraveled = 0;
+
+//global variable for the step distance of the player duck
+var stepDist = 2;
+
+/**
+ * This function computes a bounding box for a specific 3D Object. 
+ * 
+ * @param obj specifies the object we are computing a bounding box for
+ * @return bounding box 
+ */
+function computeBB(obj){
+   var objBB = new THREE.Box3().setFromObject(obj);
+   return objBB;
+}
+
+//creating our main duck and computing its bounding box.
+var duck = createDuck();
+scene.add(duck);
+duck.position.set(0,4,15);
+var duckBB = computeBB(duck);
+
+/**
+ * This function generates the terrain for our scene.
+ * This includes the water and grass planes, trees, and crocodiles
+ * 
+ * @param obj specifies the object we are computing a bounding box for
+ * @return bounding box 
+ */
+function generateTerrain(){
+
+   //num distanceTraveled tells us when we have reached the end of the terrain. 
+   while(distanceTraveled < 500){
+   
+      var scale = (Math.random() * 2)+1;
+
+      //creates the grass planes
+      var grass = createGrass();
+      grass.position.set(distanceTraveled+40,0.1,0);
+      distanceTraveled += 40;
+      scene.add(grass);
+      terrain.push(grass);
+
+      //generate logs in the water
+      //var numLogs = Math.random() * 2; //generate a number between 0 and 5. 
+      //addLogs(Math.round(numLogs),20);
+
+      //generates a random number of crocodiles
+      numCrocs = Math.random() * 4; 
+      addCrocs(Math.round(numCrocs));
+
+      //randomly generates a number of various trees
+      var numTreeBig = Math.random() * 20;  
+      var numTreeLow = Math.random() * 20; 
+      var numTreeSmall = Math.random() * 20; 
+      addTreeBig(Math.round(numTreeBig),20);
+      addTreeLow(Math.round(numTreeLow),20);
+      addTreeSmall(Math.round(numTreeSmall),20);
+   }
+
+   //once we have reached the end of the terrain, we create a house
+   var house = createHouse();
+   house.position.set(distanceTraveled+40,5,30);
+   scene.add(house);
+   
+   //*** This can be condensed maybe?
+   var log1 = createPlaceholderLog();
+   var log2 = createPlaceholderLog();
+   var log3 = createPlaceholderLog();
+
+   log1.position.set(distanceTraveled+30,0.5,30);
+   log2.position.set(distanceTraveled+22,0.5,30);
+   log3.position.set(distanceTraveled+14,0.5,30);
+
+   log1.scale.set(0.5,0.5,0.5);
+   log2.scale.set(0.5,0.5,0.5);
+   log3.scale.set(0.5,0.5,0.5);
+
+   scene.add(log1);
+   scene.add(log2);
+   scene.add(log3);
+
+   //randomly generating ducks at the end near the house
+   for(var i = 0; i < 10; i ++){
+      var x_pos = Math.random() * 40; 
+      var z_pos = Math.floor(Math.random() * ((70) - (-50) +1) -50);
+      var rotation_angle = Math.random() * Math.PI;
+      var scale = Math.random() * 1; 
+      var ducky = createDuck();
+      scene.add(ducky);
+      ducky.position.set(distanceTraveled+40+x_pos,5,z_pos);
+      ducky.scale.set(scale,scale,scale); 
+      ducky.rotation.set(0,rotation_angle,0);
+   } 
+   
+   waterItemArray = crocArray.concat(logArray);
+   checkPoints();
+  
+}
+
+/**
+ * This function adds logs to the scene. 
+ * It randomly generates x and z coordinates within each chunk of water space for each log.  
+ * It also pushes each log onto a log array for us to use later to keep track of every log in the scene.
+ * It also computes a bounding box for each log and pushes it onto an array that keeps track of every log bounding box. 
+ * 
+ * @param numLogs specifies how many logs we are generating
+ */
+//loggyBBs = []
+/* function addLogs (numLogs, radius) {
+   var x, y, z, keepgoing;
+   var scale = radius/0.5;    // adjust coordinates to size of scene
+   for (var i = 0; i < numLogs; i++) {
+      keepgoing = true;
+      while (keepgoing) {
+         x = Math.random()-0.5;
+         y = Math.random()-0.5;
+         z = Math.random()-0.5;
+         if (x*x + y*y + z*z < 0.25) {
+            //accounting for log width of 2
+            waterX = Math.floor(Math.random() * ((distanceTraveled-12) - (distanceTraveled - 28) +1) + (distanceTraveled - 28))
+            //console.log("waterX;"+waterX);
+            waterZ = Mathfloor(Math.random() * ((50) - (-50) +1) -50);
+            //console.log("waterz;"+waterZ);
+            keepgoing = false;
+            loggy = createPlaceholderLog();
+            var logBB = computeBB(loggy);
+
+            loggy.position.set(waterX, 0, waterZ);
+            //scene.add(loggy);
+            logArray.push(loggy);
+         }
+      }
+   }
+}  */
+
+/**
+ * This function adds crocodiles to the scene. 
+ * It randomly generates x and z coordinates within each chunk of water space for each crocodile.  
+ * It also pushes each crocodile onto a crocodile array for us to use later to keep track of every crocodile in the scene.
+ * It also computes a bounding box for each crocodile and pushes it onto an array that keeps track of every crocodile bounding box. 
+ * 
+ * @param numCrocs specifies how many crocs we are generating
+ */
+crocBBs = [];
+var crocX;
+var crocZ;
+function addCrocs(numCrocs){
+   var x, y, z, keepgoing;
+   for (var i = 0; i < numCrocs; i++) {
+      keepgoing = true;
+      while (keepgoing) {
+         x = Math.random()-0.5;
+         y = Math.random()-0.5;
+         z = Math.random()-0.5;
+         if (x*x + y*y + z*z < 0.25) {
+            keepgoing = false;
+
+            crocX = Math.floor(Math.random() * ((distanceTraveled-13) - (distanceTraveled - 27) +1) + (distanceTraveled - 27))
+            crocZ = Math.floor(Math.random() * ((50) - (-50) +1) -50);
+
+            croccy = createCrocodile();
+            croccy.position.set(crocX, 0.5, crocZ);
+            
+            //pushing the bounding box and object onto their respective arrays
+            var crocBB = computeBB(croccy);
+            crocBBs.push(crocBB);
+
+            scene.add(croccy);
+            crocArray.push(croccy);
+         }
+      }
+   }
+
+}
+
+/**
+ *This function checks if our crocodiles intersect with eahc other. 
+ If they do, it recalculates their coordinates
+ * 
+ */
+function checkPoints(){
+   if(numCrocs > 1){
+      for(var i = 0; i < waterItemArray.length; i++){
+         for(var j = 0; j< waterItemArray.length; j++){
+            //if they're looking at the same croc, it will always register as a bad point
+            if(i != j){
+               var xDiff = Math.abs(waterItemArray[i].position.x - waterItemArray[j].position.x);
+               var zDiff = Math.abs(waterItemArray[i].position.z - waterItemArray[j].position.z);
+               //console.log("croc 1:" + i);
+               //console.log("croc 2:" + j);
+               //console.log("x-points diff: " + Math.abs(waterItemArray[i].position.x - waterItemArray[j].position.x));
+               //console.log("z-points diff: " + Math.abs(waterItemArray[i].position.z - waterItemArray[j].position.z));
+               if((xDiff <= 10) || (zDiff <= 21)){
+                  if(xDiff <= 10 && zDiff <= 21){  //if so, we have to determine if they both overlap. If not, then its ok. 
+                     //console.log("BAD POINT");
+                     //recalculate
+                     //console.log("recalculate");
+                     waterX = Math.floor(Math.random() * ((distanceTraveled-13) - (distanceTraveled - 27) +1) + (distanceTraveled - 27))
+                     waterZ = Math.floor(Math.random() * ((50) - (-50) +1) -50);
+                     //replace
+                     waterItemArray[j].position.x = waterX;
+                     waterItemArray[j].position.z = waterZ;
+                     j=0;
+                  }
+               }
+            }
+         }
+      }
+   }
+} 
+
+/**
+ * This function adds big trees to the scene. 
+ * It randomly generates x and z coordinates within each chunk of grass space for each tree.  
+ * It also pushes each tree onto a tree array for us to use later to keep track of every tree in the scene.
+ * It also computes a bounding box for each tree and pushes it onto an array that keeps track of every tree's bounding box. 
+ * 
+ * @param  numTreeBig specifies how many big Trees we are generating
+ * @param radius gives us the size of the grass section
+ */
+treeBBs = []
+treeArray = []
+function addTreeBig(numTreeBig, radius){
+   var x, y, z, keepgoing;
+   var scale = radius/0.5;    // adjust coordinates to size of scene
+   for (var i = 0; i < numTreeBig; i++) {
+      keepgoing = true;
+      while (keepgoing) {
+         x = Math.random()-0.5;
+         y = Math.random()-0.5;
+         z = Math.random()-0.5;
+         if (x*x + y*y + z*z < 0.25) {
+            //accounting for log width of 2
+            grassX = Math.floor(Math.random() * ((distanceTraveled+8) - (distanceTraveled-8) +1) + (distanceTraveled-8))
+            grassZ = Math.floor(Math.random() * ((500) - (-500) +1) -500);
+            keepgoing = false;
+
+            treeBiggy = createTreeBig();
+            treeBiggy.position.set(grassX, 6, grassZ);
+
+            treeBigBB = computeBB(treeBiggy);
+
+            //pushing the bounding box and object onto their respective arrays
+            treeBBs.push(treeBigBB);
+            treeArray.push(treeBiggy);
+
+            scene.add(treeBiggy);
+         }
+      }
+   }
+}
+
+/**
+ * This function adds low trees to the scene. 
+ * It randomly generates x and z coordinates within each chunk of grass space for each tree.  
+ * It also pushes each tree onto a tree array for us to use later to keep track of every tree in the scene.
+ * It also computes a bounding box for each tree and pushes it onto an array that keeps track of every tree's bounding box. 
+ * 
+ * @param  numTreeLow specifies how many low Trees we are generating
+ * @param radius gives us the size of the grass section
+ */
+function addTreeLow(numTreeLow, radius){
+   var x, y, z, keepgoing;
+   var scale = radius/0.5;    // adjust coordinates to size of scene
+   for (var i = 0; i < numTreeLow; i++) {
+      keepgoing = true;
+      while (keepgoing) {
+         x = Math.random()-0.5;
+         y = Math.random()-0.5;
+         z = Math.random()-0.5;
+         if (x*x + y*y + z*z < 0.25) {
+            //accounting for log width of 2
+            grassX = Math.floor(Math.random() * ((distanceTraveled+8) - (distanceTraveled-8) +1) + (distanceTraveled-8))
+            grassZ = Math.floor(Math.random() * ((500) - (-500) +1) -500);
+            keepgoing = false;
+            
+            treeLowy = createTreeLow();
+            treeLowy.position.set(grassX, 6, grassZ);
+
+            treeLowBB = computeBB(treeLowy);
+
+            //pushing the bounding box and object onto their respective arrays
+            treeBBs.push(treeLowBB);
+            treeArray.push(treeLowy);
+            
+            scene.add(treeLowy);
+         }
+      }
+   }
+}
+
+/**
+ * This function adds small trees to the scene. 
+ * It randomly generates x and z coordinates within each chunk of grass space for each tree.  
+ * It also pushes each tree onto a tree array for us to use later to keep track of every tree in the scene.
+ * It also computes a bounding box for each tree and pushes it onto an array that keeps track of every tree's bounding box. 
+ * 
+ * @param numTreeSmall specifies how many small Trees we are generating
+ * @param radius gives us the size of the grass section
+ */
+function addTreeSmall(numTreeSmall, radius){
+   var x, y, z, keepgoing;
+   var scale = radius/0.5;    // adjust coordinates to size of scene
+
+   for (var i = 0; i < numTreeSmall; i++) {
+      keepgoing = true;
+      while (keepgoing) {
+         x = Math.random()-0.5;
+         y = Math.random()-0.5;
+         z = Math.random()-0.5;
+         if (x*x + y*y + z*z < 0.25) {
+            //accounting for log width of 2
+            grassX = Math.floor(Math.random() * ((distanceTraveled+8) - (distanceTraveled-8) +1) + (distanceTraveled-8))
+            grassZ = Math.floor(Math.random() * ((500) - (-500) +1) -500);
+            keepgoing = false;
+            
+            treeSmally = createTreeSmall();
+            treeSmally.position.set(grassX, 6, grassZ);
+
+            //pushing the bounding box and object onto their respective arrays
+            treeSmallBB = computeBB(treeSmally);
+            treeBBs.push(treeSmallBB);
+
+            treeArray.push(treeSmally);
+            scene.add(treeSmally);
+         }
+      }
+   }
+}
+
+generateTerrain();
+
+
+/**
+ * This function iterates through the array of tree bounding boxes to check if 
+ * our duck's bounding box intersects with any of the trees in our scene. 
+ * If there is an intersection, it sets our boolean willIntersect to true, which
+ * we will then use later to determine how to limit our duck's movement. 
+ */
+var willIntersectForward = false;
+var willIntersectLeft = false;
+var willIntersectRight= false;
+var willIntersectBack = false;
+var willIntersect = false;
+
+function checkIntersectionTrees(){
+   for(var bb = 0; bb < treeBBs.length; bb++){
+      if(duckBB.intersectsBox(treeBBs[bb])){
+         willIntersect = true;
+
+      }
+   }
+}
+
+/**
+ * This function iterates through the array of crocodile bounding boxes to check if 
+ * our duck's bounding box intersects with any of the crocodiles in our scene. 
+ * If there is an intersection, it calls the function reset, which will reset the entire scene. 
+ */
+function checkIntersectionCrocs(){
+   for(var bb = 0; bb < crocBBs.length; bb++){
+      if(duckBB.intersectsBox(crocBBs[bb])){
+         reset();
+      }
+   }
+}
+
+/**
+ * This function creates the crocodile animation for movement. 
+ * It iterates through each crocodile and updates their z positions by 1, 
+ * and the max and min of their bounding boxes by 1. 
+ * This is called in the render() function, so it will continuously be called each frame, 
+ * creating an animation. 
+ * If the crocodile reaches a certain point where it is our of camera view, we reset it 
+ * position and the bounding box min and max to start at the left most point of the camera view. 
+ */
+function crocMove(){
+   for(var i = 0; i < crocArray.length; i++){
+      crocArray[i].position.z += 0.05;
+      crocBBs[i].min.z += 0.05;
+      crocBBs[i].max.z += 0.05;
+
+   if(crocArray[i].position.z >= 85){
+      crocArray[i].position.z = -85;
+      crocBBs[i].min.z = -76;
+      crocBBs[i].max.z = -106.5;
+
+      } 
+   }
+    
+}
+
+//duck animation and movement with key controls
+document.addEventListener('keydown', onKeyDown);
+document.addEventListener('keyup', onKeyUp, false );
+
+/**
+ * This function determines our duck's movement when we press each of the arrow keys. 
+ * 
+ * Limits where the duck can go- i.e, stops the duck when it goes too left or right and out of the camera view, 
+ * doesn't let the duck go beyond the starting point, doesn't let the duck go past the house at the end. 
+ * 
+ * Also moves the bounding boxes when the duck's position moves. 
+ * 
+ * Rotates the duck to face which way it is trying to go. 
+ * 
+ * sets the duck's y position to make it look like the duck is jumping as it moves. 
+ */
+function onKeyDown (event) {
+
+   //first if is for when the player reaches the end of the course......
+   if(duck.position.x >= distanceTraveled){
+      switch(event.keyCode){
+         case 38: // up arrow - move forward
+         if(duck.position.x < distanceTraveled+60){
+            duck.position.x += stepDist;
+            duck.rotation.set(0,0,0);
+            duck.position.setY(4.75);
+
+            duckBB.min.x += stepDist;
+            duckBB.max.x += stepDist;
+         }
+         break;
+
+         case 37: // left arrow
+            if(duck.position.z >= -20){
+               duck.rotation.set(0,Math.PI/2,0);
+               duck.position.z -= stepDist;
+               duck.position.setY(4.75);
+
+               duckBB.min.z -= stepDist;
+               duckBB.max.z -= stepDist;
+            }
+            break;
+
+         case 39: // right arrow
+            if(duck.position.z <= 65){
+               duck.rotation.set(0,-Math.PI/2,0);
+               duck.position.setY(4.75);
+               duck.position.z += stepDist;
+
+               duckBB.min.z += stepDist;
+               duckBB.max.z += stepDist;
+            }
+         break;
+
+         case 40: // down arrow
+            duck.rotation.set(0,Math.PI,0);
+            duck.position.setY(4.75);
+            duck.position.x -= stepDist;
+
+            duckBB.min.x -= stepDist;
+            duckBB.max.x -= stepDist;
+            break;
+         }
+   //the else statement is for when the player is still on the course         
+   }else{
+      switch (event.keyCode) {
+         case 38: // up arrow - move forward 
+            if(duck.position.x < distanceTraveled){
+               //compute future move
+               duckBB.min.x += stepDist;
+               duckBB.max.x += stepDist;
+
+               //check if it will intersect with anything
+               checkIntersectionTrees();
+               console.log(willIntersect);
+
+               if(willIntersect){
+                  willIntersectForward = true;
+                  willIntersect = false
+                  if(willIntersectForward){
+                     duckBB.min.x -= stepDist;
+                     duckBB.max.x -= stepDist;
+                  }
+               }else{
+                  duck.position.x += stepDist;
+                  camera.position.x += stepDist;
+                  duck.rotation.set(0,0,0);
+                  duck.position.setY(4.75);
+               }
+         }             
+         break;
+
+         case 37: // left arrow
+            if(duck.position.z >= -20){
+               duckBB.min.z -= stepDist;
+               duckBB.max.z -= stepDist;
+
+               //check if it will intersect with anything
+               checkIntersectionTrees();
+               console.log(willIntersect);
+
+               if(willIntersect){
+                  willIntersectLeft = true;
+                  willIntersect = false;
+                  if(willIntersectLeft){
+                     duckBB.min.z += stepDist;
+                     duckBB.max.z += stepDist;
+                  }
+               }else{
+                  duck.position.z -= stepDist;
+                  duck.rotation.set(0,Math.PI/2,0);
+                  duck.position.setY(4.75);
+               }   
+         }  
+         break;
+
+         case 39: // right arrow
+            if(duck.position.z <= 65){
+               duckBB.min.z += stepDist;
+               duckBB.max.z += stepDist;
+
+               //check if it will intersect with anything
+               checkIntersectionTrees();
+
+               if(willIntersect){
+                  willIntersectRight = true;
+                  willIntersect = false;
+                  if(willIntersectRight){
+                     duckBB.min.z -= stepDist;
+                     duckBB.max.z -= stepDist;
+                  }
+               }else{
+                  duck.position.z += stepDist;
+                  duck.rotation.set(0,-Math.PI/2,0);
+                  duck.position.setY(4.75);
+               } 
+         }
+         break;
+         
+         case 40: // back arrow
+            if(duck.position.x >= 0){
+               //compute future move
+               duckBB.min.x -= stepDist;
+               duckBB.max.x -= stepDist;
+
+               //check if it will intersect with anything
+               checkIntersectionTrees()
+
+               if(willIntersect){
+                  willIntersectBack = true;
+                  willIntersect= false;
+                  if(willIntersectBack){
+                     duckBB.min.x += stepDist;
+                     duckBB.max.x += stepDist;
+                  }
+               }else{
+                  duck.position.x -= stepDist;
+                  camera.position.x -= stepDist;
+                  duck.rotation.set(0,Math.PI,0);
+                  duck.position.setY(4.75);
+               }
+  
+         }
+         break;
+      }
+   }
+}
+
+/**
+ * This function helps with the duck jumping animation. 
+ * When the key is released, the y is set to a lower position than 
+ * what it is set to when we press the key down. 
+ */
+function onKeyUp( event ) {
+   switch ( event.keyCode ) {
+      case 38: // up  move forward
+         duck.position.setY(4);
+         break;
+      case 37: // left
+         duck.position.setY(4);
+         break;
+      case 39: // right
+         duck.position.setY(4);
+         break;
+      case 40: // back
+         duck.position.setY(4);
+         break;
+   }
+}
+
+/**
+ * This function resets our scene when we run into a crocodile and "die"
+ * Removes the trees, crocodiles, terrain, and duck as well as their bounding boxes. 
+ * Resets their arrays. 
+ * 
+ * Calls generateTerrain to regenerate the terrain, crocodiles, and trees. 
+ * Their bounding boxes will be recomputed as well. 
+ * The recomputed objects and their bounding boxes will be pushed onto their newly
+ * empty arrays in the generateTerrain function. 
+ * 
+ * Recreate the duck and its bounding box manually. 
+ * 
+ * reset the camera position. 
+ */
+function reset(){
+   //removes player duck and its bounding box
+   scene.remove(duck);
+   scene.remove(duckBB);
+   //resets distance travelled by the duck back to 0
+   distanceTraveled = 0;
+
+   //removes all the croc objects and clears croc array
+   for(var i = 0; i<crocArray.length;i++){
+      scene.remove(crocArray[i]);
+   }
+   crocArray = [];
+   //removes all the croc bounding boxes and clears the array
+   for(var i = 0; i<crocBBs.length; i++){
+      scene.remove(crocBBs[i]);
+   }
+   crocBBs = [];
+   
+   //removes all the tree objects and clears tree array
+   for(var i = 0; i<treeArray.length;i++){
+      scene.remove(treeArray[i]);
+   }
+   treeArray = [];
+   //removes all the tree bounding boxes and clears the array
+   for(var i = 0; i<treeBBs.length; i++){
+      scene.remove(treeBBs[i]);
+   }
+   treeBBs = [];
+
+   //removes all the grass planes
+   for(var i = 0; i<terrain.length;i++){
+      scene.remove(terrain[i]);
+   }
+   
+   //calls generateTerrain to generate terrain, crocs, and trees again
+   generateTerrain();
+
+   //recreates playerduck and computes its bounding box
+   duck = createDuck();
+   scene.add(duck);
+   duck.position.set(0,2,15);
+   duckBB = computeBB(duck);
+
+   //resets camera's position to the starting point
+   camera.position.set(-17,50,22);   
+}
+
+/**
+ * This function animates the crocs and 
+ * we check that we are not intersecting with any crocodiles as well. 
+ */
+function render() {
+   requestAnimationFrame(render);
+   crocMove();
+   checkIntersectionCrocs();
+   renderer.render(scene,camera);
+}
+
+// ==================================================
+
+//allows shadow casting 
+var renderer = new THREE.WebGLRenderer({
+   alpha: true,
+   antialias:true
+});
+renderer.shadowMap.enabled=true;
+
+TW.mainInit(renderer,scene);
+
+// initial parameters for the camera
+var cameraParams = {
+    near: 1,
+    far: 300,
+    fov: 60, // degrees
+    aspectRatio: 2, // dimensions of canvas
+    atX: 35,
+    atY: -2,
+    atZ: 22,
+    eyeX: -17, 
+    eyeY: 50, 
+    eyeZ: 22, 
+    upX: 0,
+    upY: 1,
+    upZ:0, 
+}
+
+/**
+ * This function sets up a camera using the parameters described above
+ * 
+ * @param  cameraParams  object specifying the details of the camera
+ * @return  camera  the resulting perspective camera object
+ */
+   function setupCamera(cameraParams) {
+  var cp = cameraParams;
+
+  var camera = new THREE.PerspectiveCamera(cp.fov, cp.aspectRatio, cp.near, cp.far);
+
+  camera.position.set(cp.eyeX, cp.eyeY, cp.eyeZ);
+  camera.up.set(cp.upX, cp.upY, cp.upZ);
+  camera.lookAt(new THREE.Vector3(cp.atX, cp.atY, cp.atZ));
+
+  return camera;
+} 
+
+var camera = setupCamera(cameraParams);
+scene.add(camera); 
+
+render(); 
+
+
+// GUI controls for camera
+ /* function redoCamera() {
+  scene.remove(camera);
+  camera = setupCamera(cameraParams);
+  scene.add(camera);
+  render();
+} 
+
+var gui = new dat.GUI();
+gui.add(cameraParams,'eyeX',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'eyeY',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'eyeZ',0,100).onChange(redoCamera);
+gui.add(cameraParams,'atX',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'atY',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'atZ',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'fov',-100,200).onChange(redoCamera);
+gui.add(cameraParams,'near',-100,100).onChange(redoCamera);
+gui.add(cameraParams,'far',0,2000).onChange(redoCamera);
+gui.add(cameraParams,'upX',-10,10).onChange(redoCamera);
+gui.add(cameraParams,'upY',-10,10).onChange(redoCamera);
+gui.add(cameraParams,'upZ',-10,10).onChange(redoCamera);
+gui.add(cameraParams,'aspectRatio',-10,10).onChange(redoCamera);  */
+
+</script>
+</body>
+</html>
