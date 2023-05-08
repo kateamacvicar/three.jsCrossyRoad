@@ -1,5 +1,13 @@
+
+var loader = new THREE.TextureLoader();
+var texture = loader.load("./woodImg.jpg");
+texture.wrapS = THREE.RepeatWrapping;
+texture.wrapT = THREE.RepeatWrapping;
+texture.repeat.set(1,1);
+
+
 var logMaterials = [
-    new THREE.MeshPhongMaterial({color:new THREE.Color("rgb(120,68,66)")}), //main trunk 0
+    new THREE.MeshPhongMaterial({map: texture}), //main trunk 0
     new THREE.MeshPhongMaterial({color:new THREE.Color("rgb(105,85,86)")}), //ends of trunk 1
 ];
 
@@ -10,29 +18,12 @@ var logMaterials = [
  *
  * return log
  */
-function createPlaceholderLog(){
-    var log = new THREE.Object3D();
+function createPlaceholderLog(texture){
+    var log = new THREE.BoxGeometry(4,4,14);
 
-    var loggy = new THREE.BoxGeometry(4,4,14);
-    var logMesh = new THREE.Mesh(loggy, logMaterials[0]);
-    log.add(logMesh);
+    var logMesh = new THREE.Mesh(log, logMaterials[0]);
     
-    return log;
+    return logMesh;
+    
 }
 
-/**
- * This function animates the logs. 
- * iterates through the log array and updates their z position. 
- * If they get to a certain z position- off screen- then we reset their
- * z position to the leftmost z coordinate of the screen. 
- *
- */
-function logMove(){
-    for(var i = 0; i < logArray.length; i++){
-          logArray[i].position.z += 0.05;
- 
-       if(logArray[i].position.z >= 65){ 
-             logArray[i].position.z = -60;
-          } 
-       }
- }

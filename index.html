@@ -10,6 +10,30 @@
           width: 98%;
           height: 85%;
       }
+      #retry{
+         position:absolute; 
+         margin-top: 16%;
+         margin-left: 40%;        
+         display:none;
+         border:none;
+         background-color: rgb(229, 64, 91);
+         color:white;
+         font-size: 30px;
+         height:60px;
+         width:140px;
+         border-radius: 5px;
+         justify-content: center;
+         align-items: center;
+         font-family: "Courier New";
+         font-weight: bold;
+         letter-spacing: 1;
+      }
+
+      #retry:hover{
+         cursor:pointer;
+         background-color: pink;
+
+      }
     </style>
     <script src="https://cs.wellesley.edu/~cs307/threejs/libs/three.min.js"></script>
     <script src="https://cs.wellesley.edu/~cs307/threejs/libs/tw.js"></script>
@@ -33,7 +57,41 @@
   We also want to create a jumping animation for the duck. This animation will be played everytime the 
   player presses one of the arrow keys on the keyboard. 
 </p> -->
+
+<button id="retry" onclick = "buttonAudio.play();">retry</button>
+
 <script>
+
+//if we click the retry button, scene resets
+document.querySelector("#retry").addEventListener("click", () => {
+   reset();
+});
+
+const buttonAudio = new Audio();
+buttonAudio.src = './clickSound.mp3'
+
+const treeColAudio = new Audio();
+treeColAudio.src = './woodSound.mp3'
+
+const boingAudio = new Audio();
+boingAudio.src = './boing.mp3'
+
+const loseAudio = new Audio();
+loseAudio.src = './loseSound.mp3'
+
+
+const listener = new THREE.AudioListener();
+const backgroundAudio = new THREE.Audio(listener);
+
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('./backgroundMusic.mp3', function(buffer){
+   backgroundAudio.setBuffer(buffer);
+   backgroundAudio.setVolume(0.5);
+   backgroundAudio.setLoop(true);
+});
+
+
+
 
 //color for the sky
 TW.clearColor = 0xefd6a78;
@@ -70,7 +128,7 @@ terrain =[];
 var distanceTraveled = 0;
 
 //global variable for the step distance of the player duck
-var stepDist = 2;
+var stepDist = 2.5;
 
 /**
  * This function computes a bounding box for a specific 3D Object. 
@@ -99,7 +157,7 @@ var duckBB = computeBB(duck);
 function generateTerrain(){
 
    //num distanceTraveled tells us when we have reached the end of the terrain. 
-   while(distanceTraveled < 500){
+   while(distanceTraveled < 200){
    
       var scale = (Math.random() * 2)+1;
 
@@ -110,21 +168,16 @@ function generateTerrain(){
       scene.add(grass);
       terrain.push(grass);
 
-      //generate logs in the water
-      //var numLogs = Math.random() * 2; //generate a number between 0 and 5. 
-      //addLogs(Math.round(numLogs),20);
 
-      //generates a random number of crocodiles
-      numCrocs = Math.random() * 4; 
-      addCrocs(Math.round(numCrocs));
+      addCrocs2();
 
       //randomly generates a number of various trees
-      var numTreeBig = Math.random() * 20;  
-      var numTreeLow = Math.random() * 20; 
-      var numTreeSmall = Math.random() * 20; 
-      addTreeBig(Math.round(numTreeBig),20);
-      addTreeLow(Math.round(numTreeLow),20);
-      addTreeSmall(Math.round(numTreeSmall),20);
+      var numTreeBig = Math.random() * 25;  
+      var numTreeLow = Math.random() * 25; 
+      var numTreeSmall = Math.random() * 25; 
+      addTreeBig(Math.round(numTreeBig),numTreeBig);
+      addTreeLow(Math.round(numTreeLow),numTreeLow);
+      addTreeSmall(Math.round(numTreeSmall),numTreeSmall);
    }
 
    //once we have reached the end of the terrain, we create a house
@@ -154,57 +207,22 @@ function generateTerrain(){
       var x_pos = Math.random() * 40; 
       var z_pos = Math.floor(Math.random() * ((70) - (-50) +1) -50);
       var rotation_angle = Math.random() * Math.PI;
-      var scale = Math.random() * 1; 
+      //var scale = Math.random() * 1; 
       var ducky = createDuck();
       scene.add(ducky);
       ducky.position.set(distanceTraveled+40+x_pos,5,z_pos);
-      ducky.scale.set(scale,scale,scale); 
+      //ducky.scale.set(scale,scale,scale); 
       ducky.rotation.set(0,rotation_angle,0);
    } 
    
    waterItemArray = crocArray.concat(logArray);
-   checkPoints();
+   //checkPoints();
   
 }
+  
 
 /**
- * This function adds logs to the scene. 
- * It randomly generates x and z coordinates within each chunk of water space for each log.  
- * It also pushes each log onto a log array for us to use later to keep track of every log in the scene.
- * It also computes a bounding box for each log and pushes it onto an array that keeps track of every log bounding box. 
- * 
- * @param numLogs specifies how many logs we are generating
- */
-//loggyBBs = []
-/* function addLogs (numLogs, radius) {
-   var x, y, z, keepgoing;
-   var scale = radius/0.5;    // adjust coordinates to size of scene
-   for (var i = 0; i < numLogs; i++) {
-      keepgoing = true;
-      while (keepgoing) {
-         x = Math.random()-0.5;
-         y = Math.random()-0.5;
-         z = Math.random()-0.5;
-         if (x*x + y*y + z*z < 0.25) {
-            //accounting for log width of 2
-            waterX = Math.floor(Math.random() * ((distanceTraveled-12) - (distanceTraveled - 28) +1) + (distanceTraveled - 28))
-            //console.log("waterX;"+waterX);
-            waterZ = Mathfloor(Math.random() * ((50) - (-50) +1) -50);
-            //console.log("waterz;"+waterZ);
-            keepgoing = false;
-            loggy = createPlaceholderLog();
-            var logBB = computeBB(loggy);
-
-            loggy.position.set(waterX, 0, waterZ);
-            //scene.add(loggy);
-            logArray.push(loggy);
-         }
-      }
-   }
-}  */
-
-/**
- * This function adds crocodiles to the scene. 
+ * This function adds crocodiles and logs to the scene. 
  * It randomly generates x and z coordinates within each chunk of water space for each crocodile.  
  * It also pushes each crocodile onto a crocodile array for us to use later to keep track of every crocodile in the scene.
  * It also computes a bounding box for each crocodile and pushes it onto an array that keeps track of every crocodile bounding box. 
@@ -212,71 +230,70 @@ function generateTerrain(){
  * @param numCrocs specifies how many crocs we are generating
  */
 crocBBs = [];
+loggyBBs = [];
 var crocX;
-var crocZ;
-function addCrocs(numCrocs){
+var startingZ;
+
+function addCrocs2(numCrocs){
    var x, y, z, keepgoing;
-   for (var i = 0; i < numCrocs; i++) {
+
+   minZ = Math.ceil(130);
+   maxZ = Math.floor(180);
+   startingZ = Math.floor(Math.random() * (maxZ - minZ + 1)) + minZ;
+
+   for (var i = 0; i < 50; i++) {
       keepgoing = true;
       while (keepgoing) {
          x = Math.random()-0.5;
          y = Math.random()-0.5;
          z = Math.random()-0.5;
          if (x*x + y*y + z*z < 0.25) {
+            
             keepgoing = false;
 
-            crocX = Math.floor(Math.random() * ((distanceTraveled-13) - (distanceTraveled - 27) +1) + (distanceTraveled - 27))
-            crocZ = Math.floor(Math.random() * ((50) - (-50) +1) -50);
+            min = Math.ceil(50);
+            max = Math.floor(90);
+            interval = Math.floor(Math.random() * (max - min + 1)) + min;
+            //console.log("interval:" + interval);
 
+           //crocX = Math.floor(Math.random() * ((distanceTraveled-13) - (distanceTraveled - 27) +1) + (distanceTraveled - 27))
+            crocX = distanceTraveled - 20;
             croccy = createCrocodile();
-            croccy.position.set(crocX, 0.5, crocZ);
-            
-            //pushing the bounding box and object onto their respective arrays
+            croccy.position.set(crocX, 0.5, startingZ-interval);
+
+
+            //decide about log
+            var choose = Math.floor(Math.random() *2);
+            if( choose == 0){
+               loggy = createPlaceholderLog();
+               loggy.position.set(crocX, 0.5, startingZ-interval-30);
+               //console.log("log positon:" + loggy.position.z);
+
+               var logBB = computeBB(loggy);
+               //console.log("log bb positon:" + logBB.min.z + " " + logBB.max.z);
+               loggyBBs.push(logBB);
+
+               scene.add(loggy);
+               logArray.push(loggy);
+            }
+ 
+            startingZ -= interval;
+            //crocX += 40;
+
+           // console.log("crocZ "+ crocZ );
+            //console.log("croccy z:"+ croccy.position.z);
+
+
             var crocBB = computeBB(croccy);
             crocBBs.push(crocBB);
 
             scene.add(croccy);
-            crocArray.push(croccy);
+            crocArray.push(croccy); 
+            
+
          }
       }
-   }
-
-}
-
-/**
- *This function checks if our crocodiles intersect with eahc other. 
- If they do, it recalculates their coordinates
- * 
- */
-function checkPoints(){
-   if(numCrocs > 1){
-      for(var i = 0; i < waterItemArray.length; i++){
-         for(var j = 0; j< waterItemArray.length; j++){
-            //if they're looking at the same croc, it will always register as a bad point
-            if(i != j){
-               var xDiff = Math.abs(waterItemArray[i].position.x - waterItemArray[j].position.x);
-               var zDiff = Math.abs(waterItemArray[i].position.z - waterItemArray[j].position.z);
-               //console.log("croc 1:" + i);
-               //console.log("croc 2:" + j);
-               //console.log("x-points diff: " + Math.abs(waterItemArray[i].position.x - waterItemArray[j].position.x));
-               //console.log("z-points diff: " + Math.abs(waterItemArray[i].position.z - waterItemArray[j].position.z));
-               if((xDiff <= 10) || (zDiff <= 21)){
-                  if(xDiff <= 10 && zDiff <= 21){  //if so, we have to determine if they both overlap. If not, then its ok. 
-                     //console.log("BAD POINT");
-                     //recalculate
-                     //console.log("recalculate");
-                     waterX = Math.floor(Math.random() * ((distanceTraveled-13) - (distanceTraveled - 27) +1) + (distanceTraveled - 27))
-                     waterZ = Math.floor(Math.random() * ((50) - (-50) +1) -50);
-                     //replace
-                     waterItemArray[j].position.x = waterX;
-                     waterItemArray[j].position.z = waterZ;
-                     j=0;
-                  }
-               }
-            }
-         }
-      }
-   }
+   }   
 } 
 
 /**
@@ -401,6 +418,7 @@ function addTreeSmall(numTreeSmall, radius){
 generateTerrain();
 
 
+
 /**
  * This function iterates through the array of tree bounding boxes to check if 
  * our duck's bounding box intersects with any of the trees in our scene. 
@@ -417,6 +435,7 @@ function checkIntersectionTrees(){
    for(var bb = 0; bb < treeBBs.length; bb++){
       if(duckBB.intersectsBox(treeBBs[bb])){
          willIntersect = true;
+         treeColAudio.play();
 
       }
    }
@@ -427,10 +446,45 @@ function checkIntersectionTrees(){
  * our duck's bounding box intersects with any of the crocodiles in our scene. 
  * If there is an intersection, it calls the function reset, which will reset the entire scene. 
  */
+var needTowait;
 function checkIntersectionCrocs(){
    for(var bb = 0; bb < crocBBs.length; bb++){
       if(duckBB.intersectsBox(crocBBs[bb])){
-         reset();
+         //editing css to show button. 
+         loseAudio.play();
+         document.getElementById("retry").style.display = "flex";
+         done = true;
+         backgroundAudio.stop();
+
+    
+      }
+   }
+}
+
+/**
+ * This function iterates through the array of crocodile bounding boxes to check if 
+ * our duck's bounding box intersects with any of the crocodiles in our scene. 
+ * If there is an intersection, it calls the function reset, which will reset the entire scene. 
+ */
+ var needTowait;
+
+function checkIntersectionLogs(){
+   for(var bb = 0; bb < loggyBBs.length; bb++){
+      if(duckBB.intersectsBox(loggyBBs[bb])){
+         //console.log("on log!!");
+         duck.position.z += 0.07;
+         duckBB.max.z += 0.07;
+         duckBB.min.z += 0.07;
+         console.log("position:" + duck.position.z);
+
+         if(duck.position.z > 75.0){
+            console.log("inside IF!!!!!!!!!!!!!!!");
+            loseAudio.play();
+            document.getElementById("retry").style.display = "flex";
+            done = true;
+            backgroundAudio.stop();
+
+         }
       }
    }
 }
@@ -446,19 +500,42 @@ function checkIntersectionCrocs(){
  */
 function crocMove(){
    for(var i = 0; i < crocArray.length; i++){
-      crocArray[i].position.z += 0.05;
-      crocBBs[i].min.z += 0.05;
-      crocBBs[i].max.z += 0.05;
+      crocArray[i].position.z += 0.07;
+      crocBBs[i].min.z += 0.07;
+      crocBBs[i].max.z += 0.07;
 
-   if(crocArray[i].position.z >= 85){
-      crocArray[i].position.z = -85;
-      crocBBs[i].min.z = -76;
-      crocBBs[i].max.z = -106.5;
+   if(crocArray[i].position.z >= 200){
+      
+      scene.remove(crocArray[i]);
+
 
       } 
    }
     
 }
+
+/**
+ * This function animates the logs. 
+ * iterates through the log array and updates their z position. 
+ * If they get to a certain z position- off screen- then we reset their
+ * z position to the leftmost z coordinate of the screen. 
+ *
+ */
+ function logMove(){
+    for(var i = 0; i < logArray.length; i++){
+          logArray[i].position.z += 0.07;
+          loggyBBs[i].min.z += 0.07;
+         loggyBBs[i].max.z += 0.07;
+ 
+      if(logArray[i].position.z >= 200){
+      
+      scene.remove(logArray[i]);
+
+
+      } 
+
+   }
+ } 
 
 //duck animation and movement with key controls
 document.addEventListener('keydown', onKeyDown);
@@ -476,13 +553,15 @@ document.addEventListener('keyup', onKeyUp, false );
  * 
  * sets the duck's y position to make it look like the duck is jumping as it moves. 
  */
+firstTime = true;
 function onKeyDown (event) {
 
    //first if is for when the player reaches the end of the course......
    if(duck.position.x >= distanceTraveled){
       switch(event.keyCode){
          case 38: // up arrow - move forward
-         if(duck.position.x < distanceTraveled+60){
+         if(!event.repeat){
+            if(duck.position.x < distanceTraveled+60){
             duck.position.x += stepDist;
             duck.rotation.set(0,0,0);
             duck.position.setY(4.75);
@@ -490,9 +569,12 @@ function onKeyDown (event) {
             duckBB.min.x += stepDist;
             duckBB.max.x += stepDist;
          }
+
+         }
          break;
 
          case 37: // left arrow
+         if(!event.repeat){
             if(duck.position.z >= -20){
                duck.rotation.set(0,Math.PI/2,0);
                duck.position.z -= stepDist;
@@ -501,9 +583,12 @@ function onKeyDown (event) {
                duckBB.min.z -= stepDist;
                duckBB.max.z -= stepDist;
             }
+
+         }
             break;
 
          case 39: // right arrow
+         if(!event.repeat){
             if(duck.position.z <= 65){
                duck.rotation.set(0,-Math.PI/2,0);
                duck.position.setY(4.75);
@@ -512,54 +597,76 @@ function onKeyDown (event) {
                duckBB.min.z += stepDist;
                duckBB.max.z += stepDist;
             }
+
+         }
+ 
          break;
 
          case 40: // down arrow
+         if(!event.repeat){
             duck.rotation.set(0,Math.PI,0);
             duck.position.setY(4.75);
             duck.position.x -= stepDist;
 
             duckBB.min.x -= stepDist;
             duckBB.max.x -= stepDist;
+
+         }
+
             break;
          }
    //the else statement is for when the player is still on the course         
    }else{
       switch (event.keyCode) {
          case 38: // up arrow - move forward 
-            if(duck.position.x < distanceTraveled){
+            if(firstTime){
+               backgroundAudio.play();
+
+               firstTime = false;
+
+            }
+            if(!event.repeat){ //this prevents anything from happening if people hold down the key
+               if(duck.position.x < distanceTraveled){
+               //boingAudio.play();
+
                //compute future move
                duckBB.min.x += stepDist;
                duckBB.max.x += stepDist;
 
                //check if it will intersect with anything
                checkIntersectionTrees();
-               console.log(willIntersect);
+               checkIntersectionLogs();
+               //console.log(willIntersect);
 
                if(willIntersect){
                   willIntersectForward = true;
+
                   willIntersect = false
+
                   if(willIntersectForward){
                      duckBB.min.x -= stepDist;
                      duckBB.max.x -= stepDist;
                   }
-               }else{
-                  duck.position.x += stepDist;
-                  camera.position.x += stepDist;
-                  duck.rotation.set(0,0,0);
-                  duck.position.setY(4.75);
-               }
-         }             
+                  }else{
+                     duck.position.x += stepDist;
+                     camera.position.x += stepDist;
+                     duck.rotation.set(0,0,0);
+                     duck.position.setY(4.75);
+                  }
+            } 
+
+         }            
          break;
 
          case 37: // left arrow
-            if(duck.position.z >= -20){
+            if(!event.repeat){
+               if(duck.position.z >= -20){
+               //boingAudio.play();
                duckBB.min.z -= stepDist;
                duckBB.max.z -= stepDist;
 
                //check if it will intersect with anything
                checkIntersectionTrees();
-               console.log(willIntersect);
 
                if(willIntersect){
                   willIntersectLeft = true;
@@ -573,11 +680,15 @@ function onKeyDown (event) {
                   duck.rotation.set(0,Math.PI/2,0);
                   duck.position.setY(4.75);
                }   
-         }  
+               } 
+            } 
          break;
 
          case 39: // right arrow
-            if(duck.position.z <= 65){
+            if(!event.repeat){
+               if(duck.position.z <= 65){
+                  //boingAudio.play();
+
                duckBB.min.z += stepDist;
                duckBB.max.z += stepDist;
 
@@ -596,11 +707,16 @@ function onKeyDown (event) {
                   duck.rotation.set(0,-Math.PI/2,0);
                   duck.position.setY(4.75);
                } 
-         }
+            }
+
+            }
          break;
          
          case 40: // back arrow
-            if(duck.position.x >= 0){
+            if(!event.repeat){
+               if(duck.position.x >= 0){
+                  //boingAudio.play();
+
                //compute future move
                duckBB.min.x -= stepDist;
                duckBB.max.x -= stepDist;
@@ -621,8 +737,8 @@ function onKeyDown (event) {
                   duck.rotation.set(0,Math.PI,0);
                   duck.position.setY(4.75);
                }
-  
-         }
+            }
+            }
          break;
       }
    }
@@ -665,6 +781,10 @@ function onKeyUp( event ) {
  * reset the camera position. 
  */
 function reset(){
+   document.getElementById("retry").style.display = "none";
+
+   firstTime = true;
+
    //removes player duck and its bounding box
    scene.remove(duck);
    scene.remove(duckBB);
@@ -708,18 +828,28 @@ function reset(){
    duckBB = computeBB(duck);
 
    //resets camera's position to the starting point
-   camera.position.set(-17,50,22);   
+   camera.position.set(-17,50,22); 
+   
+   done = false;
+   render();
 }
+
 
 /**
  * This function animates the crocs and 
  * we check that we are not intersecting with any crocodiles as well. 
  */
+
+ var done = false;
 function render() {
-   requestAnimationFrame(render);
-   crocMove();
+   if(done == false){
+      requestAnimationFrame(render);
+      crocMove();
+      logMove();
    checkIntersectionCrocs();
+   checkIntersectionLogs();
    renderer.render(scene,camera);
+   }
 }
 
 // ==================================================
@@ -756,10 +886,11 @@ var cameraParams = {
  * @param  cameraParams  object specifying the details of the camera
  * @return  camera  the resulting perspective camera object
  */
+var camera;
    function setupCamera(cameraParams) {
   var cp = cameraParams;
 
-  var camera = new THREE.PerspectiveCamera(cp.fov, cp.aspectRatio, cp.near, cp.far);
+  camera = new THREE.PerspectiveCamera(cp.fov, cp.aspectRatio, cp.near, cp.far);
 
   camera.position.set(cp.eyeX, cp.eyeY, cp.eyeZ);
   camera.up.set(cp.upX, cp.upY, cp.upZ);
@@ -772,6 +903,8 @@ var camera = setupCamera(cameraParams);
 scene.add(camera); 
 
 render(); 
+
+
 
 
 // GUI controls for camera
