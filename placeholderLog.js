@@ -1,6 +1,6 @@
 
 var loader = new THREE.TextureLoader();
-var texture = loader.load("./woodImg.jpg");
+var texture = loader.load("./wood.jpg");
 texture.wrapS = THREE.RepeatWrapping;
 texture.wrapT = THREE.RepeatWrapping;
 texture.repeat.set(1,1);

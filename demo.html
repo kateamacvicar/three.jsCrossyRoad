@@ -4,6 +4,12 @@
     <style>
       /* feel free to style the canvas any way you want. If you want it to
       use the entire window, set width: 100% and height: 100%. */
+      body {
+    color: rgb(25, 89, 78);
+    background-color: #80c480;
+    display:flex;
+    /* justify-content: center; */
+  }
       canvas {
           display: block;
           margin: 10px;
@@ -48,8 +54,6 @@
     <script src = "./endScene.js"></script>
   </head>
 <body>
-<h1>HWK 6 Creative Scene</h1>
-<h3> Creators: Kate MacVicar and Marilyn Fang </h3>
 <!-- <p>This scene is a part of our final project, where we will be creating a crossy road-like game. <br>
   We plan to implement keyboard functionality, to move the duck character through the scene. 
   We will bind the arrow keys to the scene.  <br>
@@ -72,9 +76,6 @@ buttonAudio.src = './clickSound.mp3'
 
 const treeColAudio = new Audio();
 treeColAudio.src = './woodSound.mp3'
-
-const boingAudio = new Audio();
-boingAudio.src = './boing.mp3'
 
 const loseAudio = new Audio();
 loseAudio.src = './loseSound.mp3'
@@ -627,7 +628,6 @@ function onKeyDown (event) {
             }
             if(!event.repeat){ //this prevents anything from happening if people hold down the key
                if(duck.position.x < distanceTraveled){
-               //boingAudio.play();
 
                //compute future move
                duckBB.min.x += stepDist;
@@ -661,7 +661,6 @@ function onKeyDown (event) {
          case 37: // left arrow
             if(!event.repeat){
                if(duck.position.z >= -20){
-               //boingAudio.play();
                duckBB.min.z -= stepDist;
                duckBB.max.z -= stepDist;
 
@@ -687,7 +686,6 @@ function onKeyDown (event) {
          case 39: // right arrow
             if(!event.repeat){
                if(duck.position.z <= 65){
-                  //boingAudio.play();
 
                duckBB.min.z += stepDist;
                duckBB.max.z += stepDist;
@@ -715,7 +713,6 @@ function onKeyDown (event) {
          case 40: // back arrow
             if(!event.repeat){
                if(duck.position.x >= 0){
-                  //boingAudio.play();
 
                //compute future move
                duckBB.min.x -= stepDist;
