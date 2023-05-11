@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS307 Description</title>
+    <style>
+    body {
+    color: rgb(25, 89, 78);
+    background-color: #80c480;
+  }
+  
+  main {
+    margin-left: 200px;
+  }
+  
+  section {
+    margin-right: 300px;
+  }
+  
+  h1 {
+    padding-top: 5px;
+    margin-bottom: -10px;
+    font-family: "Copperplate", fantasy;
+    font-size: 61px;
+    letter-spacing: 5px;
+  }
+    
+  h2 {
+    font-family: "Garamond", sans-serif;
+    font-size: 27px;
+    }
+  
+  h3{
+    font-family: "Copperplate", fantasy;
+    font-size: 40px;
+    letter-spacing: 2px;
+  }
+  
+  h4{
+    font-family: "Monaco", monospace;
+    font-size: 19px;
+    letter-spacing: 2px;
+    padding-top: 30px;
+  }
+  
+  ul li{
+    margin-top: 10px;
+    font-family: "Courier New", sans-serif;
+    font-size: 18px;
+    text-indent: 20px;
+    letter-spacing: 1px;
+    line-height: 25px;
+    /* background-color:  rgb(105, 189, 153); */
+  }
+  
+  ul {
+    margin-bottom: 70px;
+  }
+  
+  p {
+    font-family: "Courier New", sans-serif;
+    line-height: 1.6;
+    margin-top: 30px;
+    font-size: 18px;
+  }
+  
+  #abstract {
+    background-color: rgb(105, 189, 153);
+    line-height: 1.6;
+    margin-top: 30px;
+    padding-left: 5px;
+  }
+  
+  a {
+    font-size: 25px;
+    font-family: "Copperplate", fantasy;
+    letter-spacing: 5px;
+    text-decoration: double;
+    color: rgb(25, 89, 78);
+  }  
+  
+  #url {
+    padding-bottom: 70px;
+    margin-top: 40px;
+  }
+  
+  a:hover{
+    background-color: rgb(105, 189, 153);
+  }
+  
+  #contacts {
+    font-size: 12px;
+    text-align: right;
+    padding-bottom: 50px;
+  }
+
+
+  .imageContainer{
+    display:flex;
+    width:60%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .images {
+    width: 200px;
+    height: auto;
+    display:flex;
+    padding:20px;
+  }
+
+
+
+  #bigPicture{
+    width:900px;
+    height:500px;
+  }
+
+  
+  .desc {
+    padding-left: 20px;
+  }
+  
+  #main {
+    padding-top: 70px;
+    text-align: right;
+  }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Three.js Crossy Roads </h1>    
+            
+        <section>
+            <p id="abstract">Marilyn Fang and Kate MacVicar</p>
+        
+        
+            <h3>Description</h3>
+            
+            <!--intro paragraphs-->
+            <p>We used Three.js to create a crossy roads-like game where players are a duck that must navigate through a jungle of trees and crocodiles to get home! </p>
+
+            <h4>List of features in this project:</h4>
+        
+            <ul>
+                <li>Modeling</li>
+                <li>Material, Lighting, and Shading</li>
+                <li>Changing Camera Position</li>
+                <li>User Interaction</li>
+                <li>Animation</li>
+                <li>Texture Mapping</li>
+                <li>Sounds</li>
+            </ul>
+            
+         
+            <h3>Images</h3>
+            <p> the images below show the major models of the project. <br> Each model was created using Three.js geometries. <br> A directional light casts shadows on the models, which all have MeshPhongMaterials.  
+            </p>
+            <div class = "imageContainer">
+
+            <div>
+                 <img src="./screenshot1.png" id = "bigPicture" class="images" alt="art">
+            </div>
+            
+
+            <div>
+              <img src="./duckSS.png" class="images" alt="art">
+            </div>
+
+            <div>
+              <img src="./crocodileSS.png" class="images" alt="art">
+            </div>
+
+            <div>
+              <img src="./logSS.png" class="images" alt="art">
+            </div>
+
+            <div>
+              <img src="./tree1.png" class="images" alt="art">
+            </div>
+
+            <div>
+              <img src="./tree2.png" class="images" alt="art">
+            </div>
+
+            <div>
+              <img src="./tree3.png" class="images" alt="art">
+            </div>
+            </div>
+
+
+
+
+
+            
+            
+            <div id="url">
+            <a href="demo.html">Demo &rarr; </a>
+        </div>
+        
+            </section>
+    
+    </main>
+        
+</body>
+</html>
